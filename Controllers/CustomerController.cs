@@ -59,5 +59,27 @@ namespace GeneralStoreMVC.Controllers
 
                 return RedirectToAction(nameof(Index));
         }
+        // GET: customer/details/{id}
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id is null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            var entity = await _ctx.Customers.FindAsync(id);
+            if (entity is null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            CustomerDetailViewModel model = new()
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                Email = entity.Email
+            };
+                return View(model);
+        }
     }
 }
