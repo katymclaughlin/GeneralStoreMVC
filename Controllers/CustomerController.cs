@@ -81,5 +81,49 @@ namespace GeneralStoreMVC.Controllers
             };
                 return View(model);
         }
+        // GET: customer/edit/{id}
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id is null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            var entity = await _ctx.Customers.FindAsync(id);
+            if (entity is null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            CustomerEditViewModel model = new()
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                Email = entity.Email
+            };
+                return View(model);
+        }
+        // POST: customer/edit/{id}
+    [HttpPost, ValidateAntiForgeryToken]
+        public IActionResult Edit(int id, CustomerEditViewModel model)
+        {
+            var entity = _ctx.Customers.Find(id);
+            if (entity == null)
+            {
+                return NotFound();
+            }
+
+                entity.Name = model.Name;
+                entity.Email = model.Email;
+                _ctx.Entry(entity).State = EntityState.Modified;
+
+            if (_ctx.SaveChanges() == 1)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+                TempData["ErrorMsg"] = "Unable to save to the database. Please try again later.";
+                return View(model);
+        }
     }
 }
