@@ -125,5 +125,32 @@ namespace GeneralStoreMVC.Controllers
                 TempData["ErrorMsg"] = "Unable to save to the database. Please try again later.";
                 return View(model);
         }
+        // GET: customer/delete/{id}
+        public async Task<IActionResult> Delete(int id)
+        {
+            var entity = await _ctx.Customers
+            .Include(c => c.Transactions)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (entity is null)
+            {
+            TempData["ErrorMsg"] = $"Customer #{id} does not exist";
+            return RedirectToAction(nameof(Index));
+            }
+
+            if (entity.Transactions.Count > 0)
+            {
+                _ctx.Transactions.RemoveRange(entity.Transactions);
+                }
+
+                _ctx.Customers.Remove(entity);
+
+            if (_ctx.SaveChanges() != 1 + entity.Transactions.Count)
+            {
+            TempData["ErrorMsg"] = $"Cannot delete Customer #{id}";
+            }
+
+                return RedirectToAction(nameof(Index));
+        } 
     }
 }
