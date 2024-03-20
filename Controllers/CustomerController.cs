@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using GeneralStoreMVC.Data;
 using GeneralStoreMVC.Models.Customer;
 using Microsoft.EntityFrameworkCore;
+using GeneralStoreMVC.Models.Transaction;
 
 namespace GeneralStoreMVC.Controllers
 {
@@ -67,11 +68,22 @@ namespace GeneralStoreMVC.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var entity = await _ctx.Customers.FindAsync(id);
+            var entity = await _ctx.Customers
+                .Include(c => c.Transactions)
+                .ThenInclude(t => t.Product)
+                .FirstOrDefaultAsync(c => c.Id == id);
             if (entity is null)
             {
                 return RedirectToAction(nameof(Index));
             }
+            var transactions = entity.Transactions
+                .Select(t => new TransactionListItem
+            {
+                ProductName = t.Product.Name,
+                Quantity = t.Quantity,
+                DateOfTransaction = t.DateOfTransaction,
+                Price = t.Product.Price * t.Quantity
+            }).ToList();
 
             CustomerDetailViewModel model = new()
             {
